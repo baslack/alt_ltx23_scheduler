@@ -37,6 +37,17 @@ class LTXVSchedulerPower(io.ComfyNode):
                     "stock node. Higher values steepen the slope at the midpoint "
                     "without changing the value there, for a more even descent.",
                 ),
+                io.Float.Input(
+                    id="sigma_max",
+                    default=1.0,
+                    min=0.0,
+                    max=1000.0,
+                    step=0.01,
+                    tooltip="Scales the whole sigma curve. The schedule's natural "
+                    "peak is 1.0 at the first step, so this value becomes the new "
+                    "starting sigma and everything else scales proportionally. "
+                    "1.0 leaves the curve unchanged. Applied after stretch.",
+                ),
                 io.Boolean.Input(
                     id="stretch",
                     default=True,
@@ -60,7 +71,7 @@ class LTXVSchedulerPower(io.ComfyNode):
         )
 
     @classmethod
-    def execute(cls, steps, max_shift, base_shift, power, stretch, terminal, latent=None) -> io.NodeOutput:
+    def execute(cls, steps, max_shift, base_shift, power, sigma_max, stretch, terminal, latent=None) -> io.NodeOutput:
         if latent is None:
             tokens = 4096
         else:
@@ -88,6 +99,10 @@ class LTXVSchedulerPower(io.ComfyNode):
             scale_factor = one_minus_z[-1] / (1.0 - terminal)
             stretched = 1.0 - (one_minus_z / scale_factor)
             sigmas[non_zero_mask] = stretched
+
+        # Scale the entire curve. The natural peak is 1.0, so sigma_max becomes
+        # the new starting sigma; the trailing 0 is preserved (0 * x == 0).
+        sigmas = sigmas * sigma_max
 
         return io.NodeOutput(sigmas)
 

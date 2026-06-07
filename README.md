@@ -104,6 +104,27 @@ xychart-beta
 Lines bottom-to-top in the tail: **stretch off**, **`terminal = 0.1`**,
 **`terminal = 0.3`**. The final step still snaps to 0 either way.
 
+## `sigma_max` — scale the whole curve
+
+A final scalar multiply applied *after* everything else. The schedule's natural
+peak is `1.0` at the first step, so `sigma_max` simply becomes the new starting
+sigma and every other value scales by the same factor. `1.0` is a no-op; the
+trailing `0` is preserved (`0 × x = 0`). Shown on `k = 3.5, power = 2.0`.
+
+```mermaid
+xychart-beta
+    title "Effect of sigma_max (k = 3.5, power = 2.0)"
+    x-axis "Step" [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    y-axis "Sigma" 0 --> 1
+    line [1.000,1.000,1.000,0.999,0.998,0.997,0.994,0.991,0.987,0.980,0.971,0.957,0.936,0.906,0.859,0.786,0.674,0.508,0.290,0.084,0.000]
+    line [0.750,0.750,0.750,0.749,0.749,0.747,0.746,0.743,0.740,0.735,0.728,0.718,0.702,0.679,0.644,0.590,0.506,0.381,0.218,0.063,0.000]
+    line [0.500,0.500,0.500,0.500,0.499,0.498,0.497,0.496,0.493,0.490,0.485,0.478,0.468,0.453,0.429,0.393,0.337,0.254,0.145,0.042,0.000]
+```
+
+Lines top-to-bottom: **`sigma_max = 1.0`**, **`0.75`**, **`0.5`** — the same
+shape, uniformly scaled down. Unlike `stretch`/`terminal` (which lift only the
+tail), this rescales the entire curve including its peak.
+
 ## Inputs
 
 | input        | default | notes |
@@ -112,6 +133,7 @@ Lines bottom-to-top in the tail: **stretch off**, **`terminal = 0.1`**,
 | `max_shift`  | 2.05    | shift `k` at 4096 tokens |
 | `base_shift` | 0.95    | shift `k` at 1024 tokens |
 | `power`      | 1.0     | midpoint-slope exponent; **1.0 = stock**, try 1.5–2.0 |
+| `sigma_max`  | 1.0     | scales the whole curve; becomes the new starting sigma (1.0 = no-op) |
 | `stretch`    | true    | (advanced) rescale tail to `terminal` |
 | `terminal`   | 0.1     | (advanced) value the last non-zero sigma maps to |
 | `latent`     | —       | optional; its token count drives `k` between the two shifts |
